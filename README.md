@@ -1,28 +1,30 @@
 # AI Trash Collector Robot
 
-An autonomous mobile robot capable of detecting trash using computer vision and collecting it using a robotic arm.
+An autonomous mobile robot designed to detect and collect trash using computer vision and a robotic arm.
 
-The system integrates **ESP32 WiFi communication**, **I2C communication**, **ultrasonic obstacle detection**, and a **servo-controlled robotic arm** to perform intelligent waste collection.
+The system integrates an ESP32 for monitoring, an Arduino for robot control, ultrasonic sensing for obstacle detection, and a servo-driven robotic arm for trash collection.
+
+The ESP32 web server is used **only to display the current system status** and does not control the robot.
 
 ---
 
 # System Overview
 
-The robot moves forward autonomously while continuously scanning the environment.  
+The robot moves forward continuously while scanning its surroundings using an ultrasonic sensor.
 
-A computer vision system identifies objects and sends the detected object label to an **ESP32 web server**. The ESP32 processes the data and communicates with the **Arduino motor controller through I2C**.
+An external AI vision system detects whether the object is **trash** or **not trash** and sends the result to the ESP32.
 
-When trash is detected and the robot approaches an obstacle, the robot stops and activates the robotic arm to collect the object. Otherwise, the robot avoids the obstacle and continues navigation.
+The ESP32 forwards the command to the Arduino through **I2C communication**.
+
+If the robot approaches an object and the AI indicates it is trash, the robotic arm performs a collection sequence. Otherwise, the robot avoids the obstacle.
 
 ---
 
-# Architecture
+# System Architecture
 
-Computer Vision System  
+Computer Vision Detection  
 ↓  
-WiFi POST Request  
-↓  
-ESP32 Web Server  
+ESP32 (status display + communication)  
 ↓  
 I2C Communication  
 ↓  
@@ -34,69 +36,60 @@ Motors + Robotic Arm
 
 # Hardware Components
 
-• ESP32 (WiFi communication & web server)  
+• ESP32 (WiFi monitoring and web dashboard)  
 • Arduino (main robot controller)  
-• L298 / Motor Shield (DC motor control)  
-• 4 DC motors (mobile base)  
-• Servo motors (robotic arm)  
-• Ultrasonic sensor HC-SR04  
-• Robotic gripper (end effector)
+• L293 Motor Driver  
+• 4 DC Motors (mobile base)  
+• Servo Motors (robotic arm)  
+• Ultrasonic Sensor (HC-SR04)  
+• Robotic Gripper
 
 ---
 
 # Key Features
 
-### Computer Vision Integration
-Receives object detection results from an external AI model via HTTP POST.
+## Trash Detection Integration
+The system receives trash detection results from an external AI model.
 
-### Smart Decision Logic
-The robot only activates the arm when:
+## Autonomous Navigation
+The robot moves forward continuously while monitoring obstacles.
 
-- An object is detected as **trash**
-- The robot reaches a close distance detected by the ultrasonic sensor.
+## Intelligent Decision Logic
 
-### Autonomous Navigation
-Robot moves forward continuously and avoids obstacles if they are not trash.
+When an obstacle is detected:
 
-### Robotic Arm Collection
-A multi-servo robotic arm performs a full collection cycle:
+• If trash is detected → robot stops and collects it  
+• If not trash → robot turns to avoid the obstacle
 
-1. Reach position
-2. Collect position
-3. Grab
-4. Return to home position
+## Robotic Arm Collection
 
-### Real-Time Web Dashboard
-ESP32 hosts a web interface displaying:
+The robotic arm performs a complete sequence:
 
-- Detected object
-- Robot command state
-- Trash detection status
+1. Move to reach position  
+2. Lower to object  
+3. Close gripper  
+4. Lift object  
+5. Return to home position
 
----
+Servo motion is performed smoothly using incremental interpolation.
 
-# Software Components
+## Real-Time Status Dashboard
 
-### ESP32
-- WiFi connection
-- Web server
-- HTTP API
-- JSON parsing
-- I2C master communication
+The ESP32 hosts a web page that displays:
 
-### Arduino
-- Motor control
-- Servo arm control
-- Ultrasonic sensing
-- I2C slave communication
+• Current detected object  
+• Robot command state  
+• Collection or avoidance decision
+
+The dashboard automatically refreshes every **800 ms**.
 
 ---
 
-# Communication Protocol
+# Communication
 
-## HTTP API
+## HTTP Communication
 
-POST endpoint:
+The vision system sends the detected object to the ESP32 using:
 /set_data
 
 Example JSON:
@@ -104,84 +97,67 @@ Example JSON:
 "object": "trash"
 }
 
-Possible values:
-
-| Object | Action |
-|------|------|
-trash | collect |
-bottle | collect |
-other | avoid |
+The ESP32 updates the system state and forwards the result to the Arduino via I2C.
 
 ---
 
 ## I2C Commands
 
-ESP32 sends a command every **200ms**:
+ESP32 sends commands to the Arduino:
 
-| Command | Meaning |
+| Value | Meaning |
 |------|------|
-1 | Trash detected – prepare arm |
-0 | No trash – navigation only |
+| 1 | Trash detected |
+| 0 | No trash |
+
+Commands are sent periodically every **200 ms** as a heartbeat signal.
 
 ---
 
 # Robot Behavior Logic
+Move forward continuously
+
 IF obstacle detected
 IF trash detected
-→ stop robot
-→ activate arm collection cycle
+stop robot
+run arm collection sequence
 ELSE
-→ turn left to avoid obstacle
-
+turn left to avoid obstacle
 ELSE
-→ move forward
+continue moving forward
 
 ---
 
 # Robotic Arm Motion Sequence
 
 1. Home position
-2. Reach object
-3. Move down
+2. Reach position
+3. Collect position
 4. Close gripper
 5. Lift object
 6. Return to home
 
-Smooth servo interpolation is used to ensure stable motion.
+Smooth servo transitions ensure stable arm movement.
 
 ---
 
-# Web Control Interface
+# Web Status Interface
 
-The ESP32 provides a simple **Mission Control dashboard** displaying:
+The ESP32 provides a **Mission Control dashboard** showing:
 
-- Current AI recognition result
-- I2C command state
-- Collection / Avoid decision
+• AI recognition result  
+• Current robot action  
+• I2C command status
 
-The page refreshes automatically every **800 ms**.
-
----
-
-# Example Workflow
-
-1. AI model detects **bottle**
-2. Detection is sent to ESP32 via HTTP
-3. ESP32 sends I2C command **1**
-4. Robot moves until ultrasonic detects object
-5. Robot stops
-6. Robotic arm collects the trash
-7. Robot resumes navigation
+The page updates automatically every **800 ms**.
 
 ---
 
-# Future Improvements
+# Project Structure
+ESP32_CODE/
+vision_receiver.ino
 
-• ROS2 integration  
-• SLAM navigation  
-• Advanced AI waste classification  
-• Autonomous bin sorting  
-• Multi-camera detection  
-• Path planning
+ARDUINO_ROBOT/
+trash_collector_robot.ino
 
-
+POST endpoint
