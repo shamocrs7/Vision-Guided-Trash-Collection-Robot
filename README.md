@@ -161,3 +161,13 @@ ARDUINO_ROBOT/
 trash_collector_robot.ino
 
 POST endpoint
+---
+
+# Future Improvements
+
+• ROS2 integration for modular robot architecture  
+• Autonomous navigation with SLAM  
+• Advanced object classification using deep learning  
+• Smart waste sorting system  
+• Vision-guided manipulation: the robotic arm will be controlled using camera calibration to determine the precise collection point in the workspace.
+• Inverse kinematics control: the end effector will be guided to the detected trash location using inverse kinematics to compute the required joint angles for accurate grasping.
