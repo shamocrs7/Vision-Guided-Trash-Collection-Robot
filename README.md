@@ -168,8 +168,7 @@ A video demonstration of the system is available on LinkedIn.
 The showcase presents the full workflow of the robot, including AI detection, autonomous navigation, and robotic arm trash collection.
 
 ▶ Watch the demonstration here:  
-[https://www.linkedin.com/posts/YOUR_LINK_HERE
-](https://www.linkedin.com/posts/shams-eldeen-anter-59a6522a2_robotics-computervision-automation-activity-7416251619450904576-fDDg?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEkRDcYB1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8)
+[(https://www.linkedin.com/posts/shams-eldeen-anter-59a6522a2_robotics-computervision-automation-activity-7416251619450904576-fDDg?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEkRDcYB1Ht6TLmpMc3xhN5euPZo5ecC4RJtfJrJu8)]
 ---
 
 # Future Improvements
